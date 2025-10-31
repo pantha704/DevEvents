@@ -17,28 +17,28 @@ interface MongooseCache {
 }
 
 // Extend the global object to include our mongoose cache
-// This prevents TypeScript errors when accessing global.mongoose
+// This prevents TypeScript errors when accessing global.__mongooseCache
 declare global {
-  var mongoose: MongooseCache | undefined;
+  var __mongooseCache: MongooseCache | undefined;
 }
 
 // Initialize the cache object
 // In development, use a global variable to preserve the connection across hot reloads
 // In production, the cache will be scoped to this module
-const cached: MongooseCache = global.mongoose || { conn: null, promise: null };
+const cached: MongooseCache = global.__mongooseCache || { conn: null, promise: null };
 
-if (!global.mongoose) {
-  global.mongoose = cached;
+if (!global.__mongooseCache) {
+  global.__mongooseCache = cached;
 }
 
 /**
  * Establishes and returns a cached MongoDB connection using Mongoose
- * 
+ *
  * Benefits of caching:
  * - Prevents exhausting database connections during development hot reloads
  * - Improves performance by reusing existing connections
  * - Avoids "too many connections" errors in serverless environments
- * 
+ *
  * @returns Promise that resolves to the Mongoose instance
  */
 async function connectToDatabase(): Promise<typeof mongoose> {

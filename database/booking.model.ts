@@ -34,8 +34,10 @@ const BookingSchema = new Schema<IBooking>(
   }
 );
 
-// Add index on eventId for faster queries when filtering bookings by event
-BookingSchema.index({ eventId: 1 });
+// Add compound unique index to ensure one booking per email per event
+// NOTE: Ensure any existing duplicate (same eventId+email) records are resolved/migrated
+// before applying this index in production to prevent index creation failure
+BookingSchema.index({ eventId: 1, email: 1 }, { unique: true, background: true });
 
 /**
  * Pre-save hook to validate that the referenced Event exists
@@ -47,9 +49,9 @@ BookingSchema.pre('save', async function (next) {
     try {
       // Dynamically import Event model to avoid circular dependency
       const Event = models.Event || (await import('./event.model')).default;
-      
+
       const eventExists = await Event.exists({ _id: this.eventId });
-      
+
       if (!eventExists) {
         return next(new Error('Referenced event does not exist'));
       }
