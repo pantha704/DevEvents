@@ -5,7 +5,7 @@ import { Event, IEvent } from "@/database";
 /**
  * GET route handler to fetch an event by its slug
  * @param req - Next.js request object
-* @param params - Contains the slug parameter from the dynamic route (as a Promise in Next.js 13+)
+ * @param params - Contains the slug parameter from the dynamic route (as a Promise in Next.js 13+)
 * @returns JSON response with event data or error message
  */
 export const GET = async (

@@ -108,19 +108,20 @@ export const POST = async (req: NextRequest) => {
     if (modeValue) {
       // Convert to lowercase and extract the main mode type
       const lowerMode = modeValue.toLowerCase();
-      if (lowerMode.includes('online')) {
+      // First check if it contains both 'online' and ('offline' or 'in-person') for hybrid
+      if (lowerMode.includes('online') && (lowerMode.includes('offline') || lowerMode.includes('in-person'))) {
+        modeValue = 'hybrid';
+      }
+      // Then check for individual modes
+      else if (lowerMode.includes('online')) {
         modeValue = 'online';
       } else if (lowerMode.includes('offline') || lowerMode.includes('in-person')) {
         modeValue = 'offline';
       } else if (lowerMode.includes('hybrid')) {
         modeValue = 'hybrid';
       } else {
-        // Default to 'hybrid' if it contains both online and offline terms
-        if (lowerMode.includes('online') && (lowerMode.includes('offline') || lowerMode.includes('in-person'))) {
-          modeValue = 'hybrid';
-        } else {
-          modeValue = 'hybrid'; // default fallback
-        }
+        // Default fallback
+        modeValue = 'hybrid';
       }
     }
 
@@ -149,8 +150,7 @@ export const POST = async (req: NextRequest) => {
         event.agenda = String(formDataEntries.agenda).split(',').map((item: string) => item.trim());
       }
     } else {
-      // If agenda is not provided, set to empty array but this will fail schema validation
-      // Since agenda is required in schema, we need to provide at least one item
+      // If agenda is not provided, provide a default value to satisfy the required schema
       event.agenda = ['Event details to be announced'];
     }
 
@@ -164,8 +164,7 @@ export const POST = async (req: NextRequest) => {
         event.tags = String(formDataEntries.tags).split(',').map((item: string) => item.trim());
       }
     } else {
-      // If tags is not provided, set to empty array but this will fail schema validation
-      // Since tags are required in schema, we need to provide at least one tag
+      // If tags is not provided, provide a default value to satisfy the required schema
       event.tags = ['event'];
     }
 

@@ -1,54 +1,37 @@
 'use client'
+import { createBooking } from '@/lib/actions/booking.actions';
+import posthog from 'posthog-js';
 import React, { useState } from 'react'
 
 interface BookEventProps {
-  eventSlug?: string;
+  slug: string;
+  eventId: string;
+
 }
 
-const BookEvent = ({ eventSlug }: BookEventProps) => {
+const BookEvent = ({ eventId, slug }: BookEventProps) => {
   const [email, setEmail] = useState("")
   const [submitted, setSubmitted] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault(); // Add preventDefault to avoid page refresh
 
-    // Validate email format synchronously
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      setError("Please enter a valid email address");
-      return;
-    }
+    const { success, error } = await createBooking({ slug, email })
 
-    setError(null);
-    setLoading(true);
-
-    try {
-      const response = await fetch('/api/bookings', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email,
-          eventSlug
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        setError(data.error || data.message || 'Failed to book event');
-        return;
-      }
-
+    if (success) {
       setSubmitted(true);
-    } catch (err) {
-      setError('Network error. Please try again later.');
-      console.error('Booking error:', err);
-    } finally {
-      setLoading(false);
+      try {
+        posthog.capture('event_booked', { eventId, slug, email })
+      } catch (e) {
+        console.error("PostHog capture failed:", e);
+      }
+    } else {
+      console.error("Booking creation failed", error)
+      try {
+        posthog.captureException("Booking creation failed")
+      } catch (e) {
+        console.error("PostHog captureException failed:", e);
+      }
     }
   }
 
@@ -69,15 +52,11 @@ const BookEvent = ({ eventSlug }: BookEventProps) => {
               required
             />
           </div>
-
-          {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
-
           <button
             type="submit"
             className='button-submit'
-            disabled={loading}
           >
-            {loading ? 'Submitting...' : 'Submit'}
+            Submit
           </button>
         </form>
       )}
