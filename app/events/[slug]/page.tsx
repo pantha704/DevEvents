@@ -8,8 +8,6 @@ import { getSimilarEventsBySlug } from '@/lib/actions/event.actions';
 import EventCard from '@/components/EventCard';
 import { cacheLife } from 'next/cache';
 
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
-
 const EventDetailItem = ({icon, alt, label}: { icon: string; alt: string, label: string}) => {
   return <div className='flex-row-gap-2 items-center'>
     <Image src={icon} alt={alt} width={17} height={17}></Image>
@@ -38,11 +36,21 @@ const EventTags = ({tags}: {tags: string[]}) => {
 
 const EventDetailsPage = async ({ params }: { params: { slug: string }}) => {
 
-  // 'use cache'
-  // cacheLife('hours')
   const { slug } = await params;
 
-  const event: IEvent = (await (await fetch(BASE_URL+"/api/events/"+slug)).json()).event
+  const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
+  const baseUrl = BASE_URL ? `${BASE_URL}/api/events/${slug}` : `/api/events/${slug}`;
+  const response = await fetch(baseUrl);
+
+  if (!response.ok) {
+    if (response.status === 404) {
+      return notFound();
+    }
+    throw new Error(`Failed to fetch event: ${response.status} ${response.statusText}`);
+  }
+
+  const data = await response.json();
+  const event: IEvent = data.event;
 
   if(!event) return notFound();
   // console.log(event);
@@ -100,7 +108,7 @@ const EventDetailsPage = async ({ params }: { params: { slug: string }}) => {
                   Be the first to book your spot!
                 </p>
               )}
-              <BookEvent />
+              <BookEvent eventSlug={slug} />
             </div>
         </aside>
       </div>

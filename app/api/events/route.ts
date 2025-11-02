@@ -3,13 +3,6 @@ import connectToDatabase from "@/lib/mongodb";
 import { Event, IEvent } from "@/database";
 import { v2 as cloudinary } from "cloudinary";
 
-// // Configure Cloudinary
-// cloudinary.config({
-//   // cloud_name: process.env.CLOUDINARY_CLOUD_NAME ,
-//   api_key: process.env.CLOUDINARY_API_KEY as string,
-//   api_secret: process.env.CLOUDINARY_API_SECRET as string,
-// });
-
 // Fallback to CLOUDINARY_URL if individual variables are not set
 if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
   cloudinary.config({

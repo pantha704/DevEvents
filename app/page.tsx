@@ -4,12 +4,13 @@ import { events } from "@/lib/constants"
 import { IEvent } from "@/database";
 import { cacheLife } from "next/cache";
 
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL as string;
 const Home = async () => {
 
   'use cache'
   cacheLife('hours')
-  const response = await fetch(BASE_URL+"/api/events");
+  const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
+  const baseUrl = BASE_URL ? `${BASE_URL.replace(/\/$/, '')}/api/events` : '/api/events';
+  const response = await fetch(baseUrl);
   const { events } = await response.json();
 
   return (
