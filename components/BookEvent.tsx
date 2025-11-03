@@ -28,7 +28,7 @@ const BookEvent = ({ eventId, slug }: BookEventProps) => {
       }
     } else {
       console.error('Booking creation failed', error)
-      setErrorMsg(error || 'Something went wrong. Try again.')
+      setErrorMsg(error as string || 'Something went wrong. Try again.')
       try {
         posthog.captureException('Booking creation failed')
       } catch (e) {
