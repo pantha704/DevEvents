@@ -9,6 +9,11 @@ export const createBooking = async ({ eventId, slug, email }: { eventId: string;
     try {
         await connectDB();
 
+        const existingBooking = await Booking.findOne({ eventId, email })
+        if (existingBooking) {
+            return { success: false, error: 'You have already booked this event.' }
+        }
+
         await Booking.create({ eventId, slug, email });
 
         return { success: true };

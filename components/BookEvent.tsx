@@ -1,36 +1,38 @@
 'use client'
-import { createBooking } from '@/lib/actions/booking.actions';
-import posthog from 'posthog-js';
+import { createBooking } from '@/lib/actions/booking.actions'
+import posthog from 'posthog-js'
 import React, { useState } from 'react'
 
 interface BookEventProps {
-  slug: string;
-  eventId: string;
-
+  slug: string
+  eventId: string
 }
 
 const BookEvent = ({ eventId, slug }: BookEventProps) => {
-  const [email, setEmail] = useState("")
+  const [email, setEmail] = useState('')
   const [submitted, setSubmitted] = useState(false)
+  const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault(); // Add preventDefault to avoid page refresh
+    e.preventDefault()
+    setErrorMsg(null)
 
-    const { success, error } = await createBooking({eventId, slug, email })
+    const { success, error } = await createBooking({ eventId, slug, email })
 
     if (success) {
-      setSubmitted(true);
+      setSubmitted(true)
       try {
         posthog.capture('event_booked', { eventId, slug, email })
       } catch (e) {
-        console.error("PostHog capture failed:", e);
+        console.error('PostHog capture failed:', e)
       }
     } else {
-      console.error("Booking creation failed", error)
+      console.error('Booking creation failed', error)
+      setErrorMsg(error || 'Something went wrong. Try again.')
       try {
-        posthog.captureException("Booking creation failed")
+        posthog.captureException('Booking creation failed')
       } catch (e) {
-        console.error("PostHog captureException failed:", e);
+        console.error('PostHog captureException failed:', e)
       }
     }
   }
@@ -38,24 +40,24 @@ const BookEvent = ({ eventId, slug }: BookEventProps) => {
   return (
     <div id="book-event">
       {submitted ? (
-        <p className='text-sm'>Thank you for signing up!</p>
-      ): (
-        <form onSubmit={handleSubmit} >
+        <p className="text-sm">Thank you for signing up!</p>
+      ) : (
+        <form onSubmit={handleSubmit}>
           <div>
             <label htmlFor="email">Email Address</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              id='email'
-              placeholder='Enter your email address'
+              id="email"
+              placeholder="Enter your email address"
               required
             />
+            {errorMsg && (
+              <p className="text-[15px] text-red-500 mt-1">{errorMsg}</p>
+            )}
           </div>
-          <button
-            type="submit"
-            className='button-submit'
-          >
+          <button type="submit" className="button-submit">
             Submit
           </button>
         </form>
