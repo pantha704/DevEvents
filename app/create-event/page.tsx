@@ -123,7 +123,7 @@ const CreateEvent = () => {
           </div>
           <div className="flex flex-col gap-2">
             <label htmlFor="audience" className="text-light-100">Audience *</label>
-            <input id="audience" name="audience" value={formData.audience} onChange={handleChange} required className="bg-dark-200 rounded-[6px] px-5 py-2.5 text-light-100" />
+            <input id="audience" name="audience" value={formData.audience} onChange={handleChange} required className="bg-dark-200 rounded-[6px] px-5 py-4 text-light-100" />
           </div>
           <div className="flex flex-col gap-2">
             <label htmlFor="image" className="text-light-100">Image *</label>
