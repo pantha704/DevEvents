@@ -80,7 +80,9 @@ const EventSchema = new Schema<IEvent>(
       type: [String],
       required: [true, 'Agenda is required'],
       validate: {
-        validator: (v: string[]) => Array.isArray(v) && v.length > 0,
+        validator: function(v: string[]) {
+          return Array.isArray(v) && v.length > 0;
+        },
         message: 'Agenda must contain at least one item',
       },
     },
@@ -109,42 +111,47 @@ const EventSchema = new Schema<IEvent>(
  * 1. Generate URL-friendly slug from title (only if title changed)
  * 2. Normalize date to ISO format
  * 3. Normalize time format
- */
+*/
 EventSchema.pre('save', function (next) {
-  // Generate slug only if title is new or modified
-  if (this.isModified('title')) {
-    this.slug = this.title
-      .toLowerCase()
-      .trim()
-      .replace(/[^\w\s-]/g, '') // Remove special characters
-      .replace(/\s+/g, '-') // Replace spaces with hyphens
-      .replace(/-+/g, '-') // Replace multiple hyphens with single hyphen
-      .replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
-  }
+ // Generate slug only if title is new or modified
+ if (this.isModified('title')) {
+   this.slug = this.title
+     .toLowerCase()
+     .trim()
+     .replace(/[^\w\s-]/g, '') // Remove special characters
+     .replace(/\s+/g, '-') // Replace spaces with hyphens
+     .replace(/-+/g, '-') // Replace multiple hyphens with single hyphen
+     .replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
+ }
 
-  // Normalize date to ISO format (YYYY-MM-DD)
-  if (this.isModified('date')) {
-    try {
-      const parsedDate = new Date(this.date);
-      if (isNaN(parsedDate.getTime())) {
-        return next(new Error('Invalid date format'));
-      }
-      // Store as ISO date string (YYYY-MM-DD)
-      this.date = parsedDate.toISOString().split('T')[0];
-    } catch {
-      return next(new Error('Invalid date format'));
-    }
-  }
+// Normalize date to ISO format (YYYY-MM-DD)
+ if (this.isModified('date')) {
+   try {
+     const parsedDate = new Date(this.date);
+     if (isNaN(parsedDate.getTime())) {
+       return next(new Error('Invalid date format'));
+     }
+     // Store as ISO date string (YYYY-MM-DD)
+     this.date = parsedDate.toISOString().split('T')[0];
+   } catch {
+     return next(new Error('Invalid date format'));
+   }
+ }
 
-  // Normalize time to HH:MM format
-  if (this.isModified('time')) {
-    const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
-    if (!timeRegex.test(this.time)) {
-      return next(new Error('Time must be in HH:MM format'));
-    }
-  }
+ // Normalize time to HH:MM format
+ if (this.isModified('time')) {
+   const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
+   if (!timeRegex.test(this.time)) {
+     return next(new Error('Time must be in HH:MM format'));
+   }
+}
 
-  next();
+ // Normalize mode to lowercase if it's modified
+ if (this.isModified('mode')) {
+   this.mode = (this.mode as string).toLowerCase();
+ }
+
+ next();
 });
 
 // Prevent model recompilation in development (Next.js hot reload)

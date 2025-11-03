@@ -51,11 +51,16 @@ async function connectToDatabase(): Promise<typeof mongoose> {
   if (!cached.promise) {
     const opts = {
       bufferCommands: false, // Disable Mongoose buffering to fail fast if no connection
+      serverSelectionTimeoutMS: 30000, // Increase timeout for server selection
+      socketTimeoutMS: 45000, // Increase socket timeout
     };
 
     // Create new connection promise
     cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
       return mongoose;
+    }).catch((error) => {
+      console.error('MongoDB connection error:', error);
+      throw error;
     });
   }
 
