@@ -16,7 +16,7 @@ const BookEvent = ({ eventId, slug }: BookEventProps) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault(); // Add preventDefault to avoid page refresh
 
-    const { success, error } = await createBooking({ slug, email })
+    const { success, error } = await createBooking({eventId, slug, email })
 
     if (success) {
       setSubmitted(true);
